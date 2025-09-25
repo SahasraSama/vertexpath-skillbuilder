@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {Textarea} from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import { Upload, User, Loader2, X } from "lucide-react";
 
 interface ProfileData {
   full_name: string;
+  bio: string;
   current_status: string;
   education_level: string;
   education_detail: string;
@@ -32,6 +34,7 @@ const ProfileForm: React.FC = () => {
   const { user } = useAuth();
   const [formData, setFormData] = useState<ProfileData>({
     full_name: '',
+    bio: '',
     current_status: 'student',
     education_level: 'UG',
     education_detail: '',
@@ -92,6 +95,7 @@ const ProfileForm: React.FC = () => {
     if (data) {
       setFormData({
         full_name: data.full_name || '',
+        bio:'',//Will be added to database later
         current_status: data.current_status || 'student',
         education_level: data.education_level || 'UG',
         education_detail: data.education_detail || '',
@@ -282,7 +286,18 @@ const ProfileForm: React.FC = () => {
                     required
                   />
                 </div>
-
+                {/* Bio */}
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="bio" className="text-white">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={formData.bio}
+                    onChange={(e) => handleInputChange('bio', e.target.value)}
+                    className="bg-white/5 border-white/20 text-white"
+                    placeholder="A short bio about yourself"
+                    rows={3}
+                  />
+                </div>
                 {/* Current Status */}
                 <div className="space-y-2">
                   <Label className="text-white">Current Status *</Label>

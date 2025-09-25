@@ -18,7 +18,21 @@ import {
   Lightbulb,
   BookOpen
 } from "lucide-react";
-
+import{
+  RadarChart,
+  Radar,
+  XAxis,
+  YAxis,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+  BarChart,
+  Bar
+} from 'recharts';
 interface Profile {
   id: string;
   full_name: string;
@@ -66,7 +80,6 @@ const Analysis: React.FC = () => {
       default: return null;
     }
   };
-
   if (loading) {
     return (
       <section className="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pt-16 flex items-center justify-center">
