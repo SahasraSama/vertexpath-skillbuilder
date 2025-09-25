@@ -37,59 +37,17 @@ interface SkillAnalysis {
 }
 
 const Analysis: React.FC = () => {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [skillGaps, setSkillGaps] = useState<SkillAnalysis[]>([]);
+  // Read analysis result from localStorage
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [overallScore, setOverallScore] = useState(0);
 
   useEffect(() => {
-    if (user) {
-      fetchAnalysisData();
+    const stored = localStorage.getItem("analysisResult");
+    if (stored) {
+      setAnalysisResult(JSON.parse(stored));
     }
-  }, [user]);
-
-  const fetchAnalysisData = async () => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (profileData) {
-        setProfile(profileData);
-        generateSkillAnalysis(profileData);
-      }
-    } catch (error) {
-      console.error('Error fetching analysis data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateSkillAnalysis = (profileData: Profile) => {
-    // Mock skill analysis based on target job
-    const mockAnalysis: SkillAnalysis[] = [
-      { skill: 'JavaScript', currentLevel: 75, targetLevel: 90, gap: 15, priority: 'high' },
-      { skill: 'React', currentLevel: 60, targetLevel: 85, gap: 25, priority: 'high' },
-      { skill: 'Python', currentLevel: 80, targetLevel: 80, gap: 0, priority: 'low' },
-      { skill: 'SQL', currentLevel: 55, targetLevel: 80, gap: 25, priority: 'medium' },
-      { skill: 'AWS', currentLevel: 30, targetLevel: 70, gap: 40, priority: 'high' },
-      { skill: 'Docker', currentLevel: 40, targetLevel: 75, gap: 35, priority: 'medium' },
-    ];
-
-    setSkillGaps(mockAnalysis);
-    
-    // Calculate overall score
-    const totalCurrent = mockAnalysis.reduce((sum, skill) => sum + skill.currentLevel, 0);
-    const totalTarget = mockAnalysis.reduce((sum, skill) => sum + skill.targetLevel, 0);
-    const score = Math.round((totalCurrent / totalTarget) * 100);
-    setOverallScore(score);
-  };
+    setLoading(false);
+  }, []);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -117,20 +75,21 @@ const Analysis: React.FC = () => {
     );
   }
 
-  if (!profile) {
+  if (!analysisResult) {
     return (
       <section className="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pt-16 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <h2 className="text-2xl font-bold text-foreground">Complete Your Profile</h2>
-          <p className="text-muted-foreground">Please complete your profile to access skill analysis.</p>
-          <Button onClick={() => window.location.hash = "profile"}>
-            Complete Profile
+          <h2 className="text-2xl font-bold text-foreground">No Analysis Found</h2>
+          <p className="text-muted-foreground">Please upload your resume to get skill analysis.</p>
+          <Button onClick={() => window.location.hash = ""}>
+            Go to Upload
           </Button>
         </div>
       </section>
     );
   }
 
+  // Example analysisResult: { matchPercentage: number, missingSkills: string[], matchingSkills: string[] }
   return (
     <section className="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -151,11 +110,11 @@ const Analysis: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground text-sm">Overall Match</p>
-                  <p className="text-2xl font-bold text-foreground">{overallScore}%</p>
+                  <p className="text-2xl font-bold text-foreground">{analysisResult.matchPercentage}%</p>
                 </div>
                 <BarChart3 className="h-8 w-8 text-primary" />
               </div>
-              <Progress value={overallScore} className="mt-3" />
+              <Progress value={analysisResult.matchPercentage} className="mt-3" />
             </CardContent>
           </Card>
 
@@ -165,7 +124,7 @@ const Analysis: React.FC = () => {
                 <div>
                   <p className="text-muted-foreground text-sm">Skills to Improve</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {skillGaps.filter(s => s.gap > 0).length}
+                    {analysisResult.missingSkills.length}
                   </p>
                 </div>
                 <Target className="h-8 w-8 text-orange-500" />
@@ -177,23 +136,9 @@ const Analysis: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm">High Priority</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {skillGaps.filter(s => s.priority === 'high').length}
-                  </p>
-                </div>
-                <AlertCircle className="h-8 w-8 text-red-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card/80 backdrop-blur border-border/50">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
                   <p className="text-muted-foreground text-sm">Skills Mastered</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {skillGaps.filter(s => s.gap === 0).length}
+                    {analysisResult.matchingSkills.length}
                   </p>
                 </div>
                 <Award className="h-8 w-8 text-green-500" />
@@ -209,80 +154,68 @@ const Analysis: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="h-5 w-5" />
-                  Detailed Skill Analysis
+                  Missing Skills & Recommendations
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {skillGaps.map((skill, index) => (
-                  <div key={index} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-foreground">{skill.skill}</h4>
-                        <div className={`flex items-center gap-1 ${getPriorityColor(skill.priority)}`}>
-                          {getPriorityIcon(skill.priority)}
-                          <span className="text-xs capitalize">{skill.priority}</span>
-                        </div>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {skill.currentLevel}% → {skill.targetLevel}%
+                {analysisResult.missingSkills.length === 0 ? (
+                  <div className="text-green-600 font-semibold">No major skill gaps detected. Great job!</div>
+                ) : (
+                  analysisResult.missingSkills.map((skill: string, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-orange-100 dark:bg-orange-900/20 rounded-lg mb-2">
+                      <span className="font-medium text-foreground">{skill}</span>
+                      <div className="flex gap-2">
+                        <a
+                          href={`https://www.google.com/search?q=${encodeURIComponent(skill + ' tutorial')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline text-xs"
+                        >Google</a>
+                        <a
+                          href={`https://www.coursera.org/search?query=${encodeURIComponent(skill)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline text-xs"
+                        >Coursera</a>
+                        <a
+                          href={`https://www.udemy.com/courses/search/?q=${encodeURIComponent(skill)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline text-xs"
+                        >Udemy</a>
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Current Level</span>
-                        <span>Target Level</span>
-                      </div>
-                      <div className="relative">
-                        <Progress value={skill.targetLevel} className="h-2 opacity-30" />
-                        <Progress 
-                          value={skill.currentLevel} 
-                          className="h-2 absolute top-0" 
-                        />
-                      </div>
-                    </div>
-                    
-                    {skill.gap > 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        Gap: {skill.gap} points to reach target level
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))
+                )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Recommendations */}
+          {/* Recommendations & Quick Actions */}
           <div className="space-y-6">
             <Card className="bg-card/80 backdrop-blur border-border/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Lightbulb className="h-5 w-5" />
-                  AI Recommendations
+                  Quick Recommendations
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-primary/10 rounded-lg">
-                  <h4 className="font-medium text-foreground mb-2">Focus on High Priority</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Start with AWS and React skills as they have the largest gaps for your target role.
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-green-500/10 rounded-lg">
-                  <h4 className="font-medium text-foreground mb-2">Leverage Strengths</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Your Python skills are already at target level. Consider advanced certifications.
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-orange-500/10 rounded-lg">
-                  <h4 className="font-medium text-foreground mb-2">Estimated Timeline</h4>
-                  <p className="text-sm text-muted-foreground">
-                    With consistent learning, you can close critical gaps in 3-4 months.
-                  </p>
-                </div>
+                {analysisResult.missingSkills.length > 0 ? (
+                  <div className="p-4 bg-primary/10 rounded-lg">
+                    <h4 className="font-medium text-foreground mb-2">Focus on Missing Skills</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Start learning the missing skills above to improve your match percentage.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-green-500/10 rounded-lg">
+                    <h4 className="font-medium text-foreground mb-2">All Skills Matched</h4>
+                    <p className="text-sm text-muted-foreground">
+                      You have matched all required skills for your target role!
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

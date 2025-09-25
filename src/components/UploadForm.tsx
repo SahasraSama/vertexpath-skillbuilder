@@ -56,18 +56,40 @@ const UploadForm: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      // Simulate processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "Resume processed successfully!",
-        description: "Analyzing your skills and generating recommendations...",
+      const formData = new FormData();
+      if (uploadMethod === "file" && file) {
+        formData.append("resume", file);
+      } else if (uploadMethod === "linkedin") {
+        formData.append("linkedinUrl", linkedinUrl);
+      } else if (uploadMethod === "text") {
+        formData.append("resumeText", resumeText);
+      }
+
+      // Use your own backend endpoint
+      const endpoint = "/api/analyze";
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        body: formData,
       });
 
-      // Mock processing completed - redirect to results
-      setTimeout(() => {
-        window.location.hash = "roadmap";
-      }, 1000);
+      if (!res.ok) throw new Error("API request failed");
+
+      const result = await res.json();
+      console.log("API result:", result);
+      // Example response: { matchPercentage: number, missingSkills: string[], matchingSkills: string[] }
+
+      toast({
+        title: "Analysis Complete",
+        description: `Match: ${result.matchPercentage}%`,
+      });
+
+      // Store result in localStorage for analysis page (or use context/state management)
+      localStorage.setItem("analysisResult", JSON.stringify(result));
+
+      // Redirect to analysis page and force reload
+      window.location.hash = "analysis";
+      window.location.reload();
 
     } catch (error) {
       toast({
