@@ -6,6 +6,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Index from "./pages/Index";
+import UploadForm from "@/components/UploadForm";
+import Analysis from "./pages/Analysis";
+import ProfileForm from "@/components/ProfileForm";
+import Roadmap from "./pages/Roadmap";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +24,10 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/upload" element={<UploadForm />} />
+              <Route path="/analysis" element={<Analysis />} />
+              <Route path="/profile" element={<ProfileForm />} />
+              <Route path="/roadmap" element={<Roadmap />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
