@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +9,27 @@ import { toast } from "@/hooks/use-toast";
 import { Upload, FileText, Globe, Loader2 } from "lucide-react";
 
 const UploadForm: React.FC = () => {
+  // Helper: Call FastAPI backend for skill match
+  async function checkJobSkillMatch(resumeText: string, jobTitle: string) {
+    const response = await fetch("http://localhost:8000/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resume_text: resumeText, job_title: jobTitle }),
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || "Search failed");
+    }
+    return await response.json();
+  }
   const [uploadMethod, setUploadMethod] = useState<"file" | "linkedin" | "text">("file");
   const [file, setFile] = useState<File | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [resumeText, setResumeText] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [skillResult, setSkillResult] = useState<any>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -54,47 +70,32 @@ const UploadForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-
+    setSkillResult(null);
     try {
-      const formData = new FormData();
+      let extractedText = "";
       if (uploadMethod === "file" && file) {
-        formData.append("resume", file);
+        extractedText = await file.text();
+        if (!extractedText.trim()) throw new Error("Could not extract text from PDF. Please use a text-based PDF or paste your resume.");
       } else if (uploadMethod === "linkedin") {
-        formData.append("linkedinUrl", linkedinUrl);
+        if (!linkedinUrl.trim()) throw new Error("LinkedIn URL is required.");
+        extractedText = linkedinUrl.trim();
       } else if (uploadMethod === "text") {
-        formData.append("resumeText", resumeText);
+        if (!resumeText.trim()) throw new Error("Resume text is required.");
+        extractedText = resumeText.trim();
+      } else {
+        throw new Error("No upload method selected.");
       }
-
-      // Use your own backend endpoint
-      const endpoint = "/api/analyze";
-
-      const res = await fetch(endpoint, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("API request failed");
-
-      const result = await res.json();
-      console.log("API result:", result);
-      // Example response: { matchPercentage: number, missingSkills: string[], matchingSkills: string[] }
-
+      if (!jobTitle.trim()) throw new Error("Job title is required.");
+      const result = await checkJobSkillMatch(extractedText, jobTitle.trim());
+      setSkillResult(result);
       toast({
-        title: "Analysis Complete",
-        description: `Match: ${result.matchPercentage}%`,
+        title: "Skill Match Complete",
+        description: result.similarity !== undefined ? `Similarity: ${(result.similarity * 100).toFixed(1)}%` : "No similarity calculated",
       });
-
-      // Store result in localStorage for analysis page (or use context/state management)
-      localStorage.setItem("analysisResult", JSON.stringify(result));
-
-      // Redirect to analysis page and force reload
-      window.location.hash = "analysis";
-      window.location.reload();
-
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Processing failed",
-        description: "Please try again or contact support",
+        description: error.message || "Please try again or contact support",
         variant: "destructive"
       });
     } finally {
@@ -151,6 +152,19 @@ const UploadForm: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Dream Job Title Input */}
+              <div className="space-y-2">
+                <Label htmlFor="job-title" className="text-white">Dream Job Title</Label>
+                <Input
+                  id="job-title"
+                  type="text"
+                  placeholder="e.g. Software Engineer"
+                  value={jobTitle}
+                  onChange={e => setJobTitle(e.target.value)}
+                  className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                  required
+                />
+              </div>
               {/* File Upload */}
               {uploadMethod === "file" && (
                 <div
@@ -274,6 +288,46 @@ const UploadForm: React.FC = () => {
                 )}
               </Button>
             </form>
+            {/* Skill Match Results */}
+            {skillResult && (
+              <div className="mt-8 bg-white/10 rounded-lg p-6">
+                <h2 className="text-xl font-bold text-white mb-4">Skill Match Results</h2>
+                {skillResult.error ? (
+                  <p className="text-red-400">{skillResult.error}</p>
+                ) : (
+                  <>
+                    <p className="text-white mb-2">Job Title: <span className="font-semibold">{skillResult.job_title}</span></p>
+                    <p className="text-white mb-2">Similarity: <span className="font-semibold">{(skillResult.similarity * 100).toFixed(1)}%</span></p>
+                    <div className="mb-2">
+                      <p className="text-white font-semibold">Required Skills:</p>
+                      <ul className="list-disc ml-6">
+                        {skillResult.job_skills.map((skill: string, idx: number) => (
+                          <li key={idx} className="text-white">{skill}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="mb-2">
+                      <p className="text-white font-semibold">Resume Skills:</p>
+                      <ul className="list-disc ml-6">
+                        {skillResult.resume_skills.map((skill: string, idx: number) => (
+                          <li key={idx} className="text-white">{skill}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold">Skill Matches:</p>
+                      <ul className="list-disc ml-6">
+                        {skillResult.skill_matches.map((match: any, idx: number) => (
+                          <li key={idx} className={match.matched ? "text-green-400" : "text-red-400"}>
+                            {match.skill} {match.matched ? "✔️" : "❌"}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
