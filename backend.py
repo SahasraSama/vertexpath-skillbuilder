@@ -96,7 +96,7 @@ def search(q: Query):
     """
     try:
         response = nova_client.invoke_model(
-            modelId="anthropic.claude-3-nova-20240229-v1:0",  # Nova Pro model ID
+            modelId="amazon.nova-pro-v1:0",  # Nova Pro model ID
             body=json.dumps({"prompt": prompt, "max_tokens": 256})
         )
         result = json.loads(response["body"].read())
@@ -128,6 +128,39 @@ def search(q: Query):
         "resume_skills": resume_skills,
         "skill_matches": skill_matches,
         "similarity": similarity
+    }
+@app.post("/analyze")
+def analyze(query: Query):
+    # Combine resume and job title
+    input_text = query.job_title + " -- " + query.resume_text
+    input_embedding = get_embedding(input_text)
+    input_embedding = input_embedding.reshape(1, -1)
+    faiss.normalize_L2(input_embedding)
+
+    # Find the closest job in the dataset to the dream job title
+    job_title_embedding = get_embedding(query.job_title)
+    job_title_embedding = job_title_embedding.reshape(1, -1)
+    faiss.normalize_L2(job_title_embedding)
+
+    # Search for the most relevant job in the dataset
+    scores, indices = index.search(job_title_embedding, 1)
+    matched_job = df.iloc[indices[0][0]]
+
+    # Extract required skills from matched job
+    required_skills = matched_job["required_skills"].lower().split(",")
+    resume_skills = query.resume_text.lower().split(",")
+
+    # Calculate skill match score
+    matched_skills = set(resume_skills) & set(required_skills)
+    match_score = len(matched_skills) / len(required_skills) if required_skills else 0
+    match_percentage = round(match_score * 100, 2)
+
+    return {
+        "dream_job_title": matched_job["job_title"],
+        "required_skills": required_skills,
+        "matched_skills": list(matched_skills),
+        "match_score": f"{match_percentage}%",
+        "job_description": matched_job["job_description"]
     }
 
 if __name__ == "__main__":
