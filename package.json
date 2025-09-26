@@ -1,0 +1,40 @@
+{
+  "name": "vertexpath-skillbuilder1",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@types/jquery": "^3.5.33",
+    "@types/react-router-dom": "^5.3.3",
+    "@vercel/node": "^5.3.24",
+    "axios": "^1.12.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "csv-parse": "^6.1.0",
+    "formidable": "^3.5.4",
+    "jquery": "^3.7.1",
+    "lucide-react": "^0.544.0",
+    "next": "^15.5.4",
+    "pdf-parse": "^1.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.9.2",
+    "react-scripts": "^5.0.1",
+    "recharts": "^3.2.1",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.4",
+    "@types/csv-parse": "^1.2.5",
+    "@types/node": "^24.5.2",
+    "@types/recharts": "^2.0.1",
+    "gh-pages": "^6.3.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+  },
+  "homepage": "https://SahasraSama.github.io/vertexpath-skillbuilder1"
+}

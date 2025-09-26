@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {Textarea} from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -59,19 +59,19 @@ const ProfileForm: React.FC = () => {
   useEffect(() => {
     const requiredFields = ['full_name', 'current_status', 'education_level', 'target_job'];
     const optionalFields = ['education_detail', 'college_or_company', 'gender', 'dob', 'location'];
-    
+
     const completedRequired = requiredFields.filter(field => {
       const value = formData[field as keyof ProfileData];
       return typeof value === 'string' ? value.trim() !== '' : Array.isArray(value) ? value.length > 0 : false;
     }).length;
-    
+
     const completedOptional = optionalFields.filter(field => {
       const value = formData[field as keyof ProfileData];
       return typeof value === 'string' ? value.trim() !== '' : Array.isArray(value) ? value.length > 0 : false;
     }).length;
 
     const completion = ((completedRequired / requiredFields.length) * 60) + 
-                     ((completedOptional / optionalFields.length) * 40);
+                       ((completedOptional / optionalFields.length) * 40);
     
     setProfileCompletion(Math.round(completion));
   }, [formData]);
@@ -95,7 +95,7 @@ const ProfileForm: React.FC = () => {
     if (data) {
       setFormData({
         full_name: data.full_name || '',
-        bio:'',//Will be added to database later
+        bio:'', // Will be added to database later
         current_status: data.current_status || 'student',
         education_level: data.education_level || 'UG',
         education_detail: data.education_detail || '',
@@ -316,164 +316,6 @@ const ProfileForm: React.FC = () => {
                       <SelectItem value="career_change">Career Change</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                {/* Education Level */}
-                <div className="space-y-2">
-                  <Label className="text-white">Education Level</Label>
-                  <Select
-                    value={formData.education_level}
-                    onValueChange={(value) => handleInputChange('education_level', value)}
-                  >
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="High School">High School</SelectItem>
-                      <SelectItem value="UG">Undergraduate</SelectItem>
-                      <SelectItem value="PG">Postgraduate</SelectItem>
-                      <SelectItem value="PhD">PhD</SelectItem>
-                      <SelectItem value="Diploma">Diploma</SelectItem>
-                      <SelectItem value="Certificate">Certificate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Education Detail */}
-                <div className="space-y-2">
-                  <Label htmlFor="education_detail" className="text-white">
-                    {formData.education_level === 'UG' || formData.education_level === 'PG' ? 'Degree/Major' : 'Program/Field'}
-                  </Label>
-                  <Input
-                    id="education_detail"
-                    value={formData.education_detail}
-                    onChange={(e) => handleInputChange('education_detail', e.target.value)}
-                    className="bg-white/5 border-white/20 text-white"
-                    placeholder={formData.education_level === 'UG' ? 'e.g., Computer Science' : 'e.g., Data Science'}
-                  />
-                </div>
-
-                {/* College or Company */}
-                <div className="space-y-2">
-                  <Label htmlFor="college_or_company" className="text-white">
-                    {formData.current_status === 'student' ? 'College/University' : 'Company/Organization'}
-                  </Label>
-                  <Input
-                    id="college_or_company"
-                    value={formData.college_or_company}
-                    onChange={(e) => handleInputChange('college_or_company', e.target.value)}
-                    className="bg-white/5 border-white/20 text-white"
-                    placeholder={formData.current_status === 'student' ? 'e.g., MIT' : 'e.g., Google'}
-                  />
-                </div>
-
-                {/* Experience Years (if working) */}
-                {(formData.current_status === 'working' || formData.current_status === 'freelancer') && (
-                  <div className="space-y-2">
-                    <Label className="text-white">Years of Experience</Label>
-                    <Select
-                      value={formData.experience_years}
-                      onValueChange={(value) => handleInputChange('experience_years', value)}
-                    >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder="Select experience" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0-1">0-1 years</SelectItem>
-                        <SelectItem value="1-3">1-3 years</SelectItem>
-                        <SelectItem value="3-5">3-5 years</SelectItem>
-                        <SelectItem value="5-10">5-10 years</SelectItem>
-                        <SelectItem value="10+">10+ years</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Target Job */}
-                <div className="space-y-2">
-                  <Label htmlFor="target_job" className="text-white">Target Job Title *</Label>
-                  <Input
-                    id="target_job"
-                    value={formData.target_job}
-                    onChange={(e) => handleInputChange('target_job', e.target.value)}
-                    className="bg-white/5 border-white/20 text-white"
-                    placeholder="e.g., Data Scientist, Software Engineer"
-                    required
-                  />
-                </div>
-
-                {/* Gender */}
-                <div className="space-y-2">
-                  <Label className="text-white">Gender (Optional)</Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={(value) => handleInputChange('gender', value)}
-                  >
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="non-binary">Non-binary</SelectItem>
-                      <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Date of Birth */}
-                <div className="space-y-2">
-                  <Label htmlFor="dob" className="text-white">Date of Birth (Optional)</Label>
-                  <Input
-                    id="dob"
-                    type="date"
-                    value={formData.dob}
-                    onChange={(e) => handleInputChange('dob', e.target.value)}
-                    className="bg-white/5 border-white/20 text-white"
-                  />
-                </div>
-
-                {/* Location */}
-                <div className="space-y-2">
-                  <Label htmlFor="location" className="text-white">Location</Label>
-                  <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    className="bg-white/5 border-white/20 text-white"
-                    placeholder="e.g., San Francisco, CA"
-                  />
-                </div>
-              </div>
-
-              {/* Skills */}
-              <div className="space-y-2">
-                <Label htmlFor="skills" className="text-white">Current Skills</Label>
-                <Input
-                  id="skills"
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyDown={handleSkillAdd}
-                  className="bg-white/5 border-white/20 text-white"
-                  placeholder="Type a skill and press Enter to add"
-                />
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.skills.map((skill, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="bg-primary/20 text-white border-primary/30 hover:bg-primary/30"
-                    >
-                      {skill}
-                      <button
-                        type="button"
-                        onClick={() => handleSkillRemove(skill)}
-                        className="ml-2 hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
                 </div>
               </div>
 

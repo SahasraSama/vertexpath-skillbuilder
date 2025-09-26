@@ -1,4 +1,4 @@
-# backend.py
+'''# backend.py
 import boto3, json
 import pandas as pd
 import numpy as np
@@ -131,4 +131,90 @@ def search(q: Query):
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)'''
+    import { VercelRequest, VercelResponse } from "@vercel/node";
+import fs from "fs";
+import axios from "axios";
+import csvParser from "csv-parser";
+import * as pdf from "pdf-parse";
+
+const NOVA_PRO_API_KEY = process.env.NOVA_API_KEY!;
+const NOVA_PRO_URL = "https://api.nova-pro.com/v1/extract";
+
+// Helper: Read JD dataset (CSV with a column `required_skills`)
+async function readJDDataset(filePath: string) {
+  const results: any[] = [];
+  return new Promise<any[]>((resolve, reject) => {
+    fs.createReadStream(filePath)
+      .pipe(csvParser())
+      .on("data", (data) => results.push(data))
+      .on("end", () => resolve(results))
+      .on("error", (err) => reject(err));
+  });
+}
+
+// Helper: Extract resume text (PDF or TXT)
+async function extractResumeText(filePath: string) {
+  const dataBuffer = fs.readFileSync(filePath);
+  const pdfData = await pdf(dataBuffer).catch(() => null);
+  if (pdfData?.text) return pdfData.text;
+  return dataBuffer.toString("utf-8"); // fallback for TXT
+}
+
+// Call Nova Pro to extract skills
+async function extractSkillsFromResume(text: string) {
+  const response = await axios.post(
+    NOVA_PRO_URL,
+    { text },
+    { headers: { Authorization: `Bearer ${NOVA_PRO_API_KEY}` } }
+  );
+  return response.data.skills || [];
+}
+
+// Compare resume vs JD skills
+function compareSkills(jdSkills: string[], resumeSkills: string[]) {
+  const jdSet = new Set(jdSkills.map((s) => s.toLowerCase().trim()));
+  const resumeSet = new Set(resumeSkills.map((s) => s.toLowerCase().trim()));
+
+  const matchingSkills = [...jdSet].filter((s) => resumeSet.has(s));
+  const missingSkills = [...jdSet].filter((s) => !resumeSet.has(s));
+
+  const matchPercentage = (matchingSkills.length / jdSet.size) * 100;
+  return { matchPercentage, matchingSkills, missingSkills };
+}
+
+// API Handler
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+  try {
+    const resumeFile = req.files?.resume;
+    const jdFile = req.files?.jdDataset;
+    if (!resumeFile || !jdFile) return res.status(400).json({ error: "Files missing" });
+
+    // Save temporarily
+    const resumePath = `/tmp/${resumeFile.name}`;
+    const jdPath = `/tmp/${jdFile.name}`;
+    fs.writeFileSync(resumePath, resumeFile.data);
+    fs.writeFileSync(jdPath, jdFile.data);
+
+    // Extract resume text
+    const resumeText = await extractResumeText(resumePath);
+
+    // Extract skills with Nova Pro
+    const resumeSkills = await extractSkillsFromResume(resumeText);
+
+    // Read JD dataset (take the first JD for example)
+    const jdData = await readJDDataset(jdPath);
+    const jdSkills = jdData[0]?.required_skills?.split(",") || [];
+
+    // Compare
+    const comparison = compareSkills(jdSkills, resumeSkills);
+
+    res.status(200).json({ ...comparison, resumeSkills, jdSkills });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+}
+

@@ -1,0 +1,70 @@
+{
+  "Python": [
+    { "name": "Python for Everybody", "link": "https://www.coursera.org/specializations/python" },
+    { "name": "Complete Python Bootcamp", "link": "https://www.udemy.com/course/complete-python-bootcamp/" },
+    { "name": "Python 3 Tutorial", "link": "https://www.edx.org/course/python-basics-for-data-science" }
+  ],
+  "SQL": [
+    { "name": "SQL for Data Science", "link": "https://www.coursera.org/learn/sql-for-data-science" },
+    { "name": "SQL Bootcamp", "link": "https://www.udemy.com/course/the-complete-sql-bootcamp/" },
+    { "name": "Databases and SQL", "link": "https://www.edx.org/course/databases-and-sql-for-data-science" }
+  ],
+  "Git": [
+    { "name": "Git & GitHub Crash Course", "link": "https://www.udemy.com/course/git-and-github-crash-course/" },
+    { "name": "Version Control with Git", "link": "https://www.coursera.org/learn/introduction-git-github" }
+  ],
+  "Machine Learning": [
+    { "name": "Machine Learning A-Z", "link": "https://www.udemy.com/course/machinelearning/" },
+    { "name": "Machine Learning Specialization", "link": "https://www.coursera.org/specializations/machine-learning" },
+    { "name": "Intro to Machine Learning", "link": "https://www.edx.org/course/introduction-to-machine-learning" }
+  ],
+  "Deep Learning": [
+    { "name": "Deep Learning Specialization", "link": "https://www.coursera.org/specializations/deep-learning" },
+    { "name": "Deep Learning with PyTorch", "link": "https://www.udemy.com/course/deep-learning-pytorch/" }
+  ],
+  "Data Analysis": [
+    { "name": "Data Analysis with Python", "link": "https://www.coursera.org/learn/data-analysis-with-python" },
+    { "name": "Python for Data Analysis", "link": "https://www.udemy.com/course/python-for-data-analysis/" },
+    { "name": "Analyzing Data with Excel", "link": "https://www.edx.org/course/analyzing-and-visualizing-data-with-excel" }
+  ],
+  "Cloud Computing": [
+    { "name": "AWS Cloud Practitioner Essentials", "link": "https://www.udemy.com/course/aws-cloud-practitioner/" },
+    { "name": "Google Cloud Fundamentals", "link": "https://www.coursera.org/learn/gcp-fundamentals" },
+    { "name": "Introduction to Cloud Computing", "link": "https://www.edx.org/course/introduction-to-cloud-computing" }
+  ],
+  "Communication": [
+    { "name": "Effective Communication", "link": "https://www.coursera.org/learn/effective-business-communication" },
+    { "name": "Business Communication Skills", "link": "https://www.udemy.com/course/business-communication-skills/" }
+  ],
+  "Project Management": [
+    { "name": "Fundamentals of Project Planning", "link": "https://www.coursera.org/learn/project-management-principles" },
+    { "name": "Project Management Basics", "link": "https://www.udemy.com/course/project-management-basics/" },
+    { "name": "Project Management MicroMasters", "link": "https://www.edx.org/micromasters/ritx-project-management" }
+  ],
+  "JavaScript": [
+    { "name": "The Complete JavaScript Course 2025", "link": "https://www.udemy.com/course/the-complete-javascript-course/" },
+    { "name": "JavaScript Basics", "link": "https://www.coursera.org/learn/javascript-basics" },
+    { "name": "Programming in JavaScript", "link": "https://www.edx.org/course/javascript-introduction" }
+  ],
+  "React": [
+    { "name": "React - The Complete Guide", "link": "https://www.udemy.com/course/react-the-complete-guide/" },
+    { "name": "Front-End Web Development with React", "link": "https://www.coursera.org/learn/front-end-react" },
+    { "name": "React Fundamentals", "link": "https://www.edx.org/course/react-fundamentals" }
+  ],
+  "Node.js": [
+    { "name": "Node.js, Express, MongoDB & More", "link": "https://www.udemy.com/course/nodejs-express-mongodb/" },
+    { "name": "Server-side Development with NodeJS", "link": "https://www.coursera.org/learn/server-side-nodejs" }
+  ],
+  "AWS": [
+    { "name": "AWS Certified Solutions Architect", "link": "https://www.udemy.com/course/aws-certified-solutions-architect/" },
+    { "name": "AWS Fundamentals", "link": "https://www.coursera.org/learn/aws-fundamentals" }
+  ],
+  "Docker": [
+    { "name": "Docker Mastery", "link": "https://www.udemy.com/course/docker-mastery/" },
+    { "name": "Introduction to Docker", "link": "https://www.coursera.org/learn/docker" }
+  ],
+  "Kubernetes": [
+    { "name": "Kubernetes for Beginners", "link": "https://www.udemy.com/course/kubernetes-for-beginners/" },
+    { "name": "Introduction to Kubernetes", "link": "https://www.coursera.org/learn/introduction-to-kubernetes" }
+  ]
+}
